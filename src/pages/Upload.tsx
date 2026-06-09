@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { UploadCloud, ShieldAlert, MapPin, Tag, ToggleLeft, ToggleRight, CheckCircle } from 'lucide-react'
 import { cn } from '../lib/utils'

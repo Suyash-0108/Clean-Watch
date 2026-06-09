@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { motion, useAnimation } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { LayoutDashboard, Users, FileText, Settings, BarChart3, CheckCircle2, XCircle, Clock, Activity } from 'lucide-react'
 import { mockPosts } from '../data/mock'
 
