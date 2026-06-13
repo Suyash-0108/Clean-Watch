@@ -337,6 +337,7 @@ const Upload = () => {
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               className="text-emerald-400 focus:outline-none"
+              onClick={() => setIsAnonymous(!isAnonymous)}
             >
               {isAnonymous ? (
                 <ToggleRight className="w-12 h-12 drop-shadow-[0_0_15px_rgba(16,185,129,0.5)]" />
