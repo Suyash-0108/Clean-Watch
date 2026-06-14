@@ -1,46 +1,102 @@
-import { useState } from 'react'
-import { motion } from 'framer-motion'
-import { MapPin, Clock, ArrowUp, MessageSquare, AlertTriangle, Plus, Filter } from 'lucide-react'
-import { mockPosts } from '../data/mock'
-import { Link } from 'react-router-dom'
-import { cn } from '../lib/utils'
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import {
+  MapPin,
+  Clock,
+  ArrowUp,
+  MessageSquare,
+  AlertTriangle,
+  Plus,
+  Filter,
+} from "lucide-react";
+import { mockPosts } from "../data/mock";
+import { Link } from "react-router-dom";
+import { cn } from "../lib/utils";
 
 const containerVariants = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
-    transition: { staggerChildren: 0.1 }
-  }
-}
+    transition: { staggerChildren: 0.1 },
+  },
+};
 
 const itemVariants = {
   hidden: { opacity: 0, y: 30 },
-  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
-}
-
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { type: "spring", stiffness: 300, damping: 24 },
+  },
+};
+type Report = {
+  _id: string;
+  imageUrl: string;
+  description: string;
+  location: string;
+  category: string;
+  status: string;
+  upvotes: number;
+  createdAt: string;
+};
 const Feed = () => {
-  const [filter, setFilter] = useState('All')
-  
-  const filters = ['All', 'Latest', 'Trending', 'Garbage Dumping', 'Water Wastage', 'Public Damage']
+  const [filter, setFilter] = useState("All");
+  const [posts, setPosts] = useState<Report[]>([]);
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    const fetchReports = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/api/reports");
 
-  const filteredPosts = filter === 'All' || filter === 'Latest' || filter === 'Trending' 
-    ? mockPosts 
-    : mockPosts.filter(p => p.category === filter)
+        const data = await response.json();
 
+        setPosts(data);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchReports();
+  }, []);
+  const filters = [
+    "All",
+    "Latest",
+    "Trending",
+    "Garbage Dumping",
+    "Water Wastage",
+    "Public Damage",
+  ];
+
+  const filteredPosts =
+    filter === "All" || filter === "Latest" || filter === "Trending"
+      ? posts
+      : posts.filter((p) => p.category.toLowerCase() === filter.toLowerCase());
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-white">
+        Loading reports...
+      </div>
+    );
+  }
   return (
     <div className="min-h-screen pt-28 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto relative z-10">
-      
       {/* Header & Filters */}
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         className="flex flex-col md:flex-row md:items-center justify-between mb-12 gap-6"
       >
         <div>
-          <h1 className="text-4xl md:text-5xl font-black text-white mb-3 tracking-tight">Community Feed</h1>
-          <p className="text-gray-400 text-lg font-light">See what's happening around you, in real-time.</p>
+          <h1 className="text-4xl md:text-5xl font-black text-white mb-3 tracking-tight">
+            Community Feed
+          </h1>
+          <p className="text-gray-400 text-lg font-light">
+            See what's happening around you, in real-time.
+          </p>
         </div>
-        
+
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex items-center space-x-2 mr-2 text-gray-500">
             <Filter className="w-5 h-5" />
@@ -53,9 +109,9 @@ const Feed = () => {
               onClick={() => setFilter(f)}
               className={cn(
                 "px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-300 border backdrop-blur-md",
-                filter === f 
-                  ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.3)]" 
-                  : "bg-white/[0.03] text-gray-400 border-white/10 hover:border-white/30 hover:text-white"
+                filter === f
+                  ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.3)]"
+                  : "bg-white/[0.03] text-gray-400 border-white/10 hover:border-white/30 hover:text-white",
               )}
             >
               {f}
@@ -65,7 +121,7 @@ const Feed = () => {
       </motion.div>
 
       {/* Masonry-like Grid */}
-      <motion.div 
+      <motion.div
         variants={containerVariants}
         initial="hidden"
         animate="show"
@@ -73,9 +129,13 @@ const Feed = () => {
       >
         {filteredPosts.map((post) => (
           <motion.div
-            key={post.id}
+            key={post._id}
             variants={itemVariants}
-            whileHover={{ scale: 1.03, y: -8, rotate: Math.random() > 0.5 ? 1 : -1 }}
+            whileHover={{
+              scale: 1.03,
+              y: -8,
+              rotate: Math.random() > 0.5 ? 1 : -1,
+            }}
             className="glass-card-premium rounded-[2rem] overflow-hidden group flex flex-col cursor-pointer relative"
           >
             {/* Dynamic Hover Shadow */}
@@ -85,18 +145,22 @@ const Feed = () => {
             <div className="relative h-56 overflow-hidden bg-[#050505] rounded-t-[2rem]">
               <div className="absolute inset-0 bg-gradient-to-t from-[#09090b] via-transparent to-transparent z-10"></div>
               <div className="absolute inset-0 bg-emerald-500/30 mix-blend-overlay opacity-0 group-hover:opacity-100 transition-opacity duration-500 z-10"></div>
-              <img 
-                src={post.image} 
-                alt="Reported issue" 
+              <img
+                src={post.imageUrl}
+                alt="Reported issue"
                 className="w-full h-full object-cover group-hover:scale-110 group-hover:rotate-1 transition-all duration-700 ease-out"
               />
               <div className="absolute top-4 right-4 z-20">
-                <span className={cn(
-                  "px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest backdrop-blur-xl border shadow-lg",
-                  post.status === 'resolved' ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/50" :
-                  post.status === 'in-progress' ? "bg-blue-500/20 text-blue-400 border-blue-500/50" :
-                  "bg-orange-500/20 text-orange-400 border-orange-500/50"
-                )}>
+                <span
+                  className={cn(
+                    "px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest backdrop-blur-xl border shadow-lg",
+                    post.status === "resolved"
+                      ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/50"
+                      : post.status === "in-progress"
+                        ? "bg-blue-500/20 text-blue-400 border-blue-500/50"
+                        : "bg-orange-500/20 text-orange-400 border-orange-500/50",
+                  )}
+                >
                   {post.status}
                 </span>
               </div>
@@ -109,12 +173,18 @@ const Feed = () => {
 
               <div className="flex items-center space-x-3 mb-5 relative z-10">
                 <div className="w-10 h-10 rounded-full bg-white/[0.05] flex items-center justify-center border border-white/10 shadow-inner">
-                  <span className="text-sm font-black text-gray-300 tracking-tighter">{post.anonymousId.split('-')[1]}</span>
+                  <span className="text-sm font-black text-gray-300 tracking-tighter">
+                    {post.anonymousId.split("-")[1]}
+                  </span>
                 </div>
-                <span className="text-sm font-medium text-gray-400 tracking-wide">{post.anonymousId}</span>
+                <span className="text-sm font-medium text-gray-400 tracking-wide">
+                  Resident
+                </span>
               </div>
 
-              <h3 className="text-xl font-bold text-white mb-3 tracking-tight relative z-10">{post.category}</h3>
+              <h3 className="text-xl font-bold text-white mb-3 tracking-tight relative z-10">
+                {post.category}
+              </h3>
               <p className="text-gray-400 text-sm mb-8 line-clamp-3 flex-grow leading-relaxed font-light relative z-10">
                 {post.description}
               </p>
@@ -126,14 +196,14 @@ const Feed = () => {
                 </div>
                 <div className="flex items-center text-sm text-gray-400 font-medium">
                   <Clock className="w-4 h-4 mr-3 text-emerald-500" />
-                  {post.timestamp}
+                  {new Date(post.createdAt).toLocaleDateString()}
                 </div>
               </div>
 
               {/* Actions */}
               <div className="flex items-center justify-between pt-5 border-t border-white/10 mt-auto relative z-10">
                 <div className="flex space-x-6">
-                  <motion.button 
+                  <motion.button
                     whileTap={{ scale: 0.8 }}
                     whileHover={{ scale: 1.1 }}
                     className="flex items-center space-x-2 text-gray-400 hover:text-emerald-400 transition-colors group/btn relative"
@@ -144,7 +214,7 @@ const Feed = () => {
                     </div>
                     <span className="text-sm font-bold">{post.upvotes}</span>
                   </motion.button>
-                  <motion.button 
+                  <motion.button
                     whileTap={{ scale: 0.8 }}
                     whileHover={{ scale: 1.1 }}
                     className="flex items-center space-x-2 text-gray-400 hover:text-white transition-colors group/btn"
@@ -155,9 +225,9 @@ const Feed = () => {
                     <span className="text-sm font-bold">{post.comments}</span>
                   </motion.button>
                 </div>
-                <motion.button 
+                <motion.button
                   whileHover={{ rotate: 15 }}
-                  className="p-2 text-gray-500 hover:text-red-400 transition-colors" 
+                  className="p-2 text-gray-500 hover:text-red-400 transition-colors"
                   title="Report Abuse"
                 >
                   <AlertTriangle className="w-5 h-5" />
@@ -169,7 +239,7 @@ const Feed = () => {
       </motion.div>
 
       {/* Floating Action Button */}
-      <motion.div 
+      <motion.div
         className="fixed bottom-10 right-10 z-50"
         whileHover={{ scale: 1.1, rotate: 90 }}
         whileTap={{ scale: 0.9 }}
@@ -184,9 +254,8 @@ const Feed = () => {
           </div>
         </Link>
       </motion.div>
-
     </div>
-  )
-}
+  );
+};
 
-export default Feed
+export default Feed;
